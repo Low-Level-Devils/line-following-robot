@@ -10,10 +10,11 @@
 use embassy_executor::Spawner;
 use embassy_time::{Duration, Timer};
 use esp_hal::clock::CpuClock;
+use esp_hal::ledc::*;
 use esp_hal::timer::timg::TimerGroup;
+use l298n_driver::l298n_control::{self, L298n};
 use log::info;
 use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
-use l298n_driver::l298n_control::{self, L298n};
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
@@ -36,6 +37,42 @@ async fn main(spawner: Spawner) -> ! {
 
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
+
+    let tcrt_center_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO2);
+    let tcrt_center = Tcrt5000::new(tcrt_center_pin, true);
+
+    let tcrt_mid_left_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO4);
+    let tcrt_mid_left = Tcrt5000::new(tcrt_mid_left_pin, true);
+
+    let tcrt_left_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO5);
+    let tcrt_left = Tcrt5000::new(tcrt_left_pin, true);
+
+    let tcrt_mid_right_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO18);
+    let tcrt_mid_right = Tcrt5000::new(tcrt_mid_right_pin, true);
+
+    let tcrt_right_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO19);
+    let tcrt_right = Tcrt5000::new(tcrt_right_pin, true);
+
+    let l298n_ledc = l298n_control::initialize_ledc(peripherals.LEDC);
+    let l298n_lstimer = l298n_control::initialize_lstimer(&l298n_ledc);
+
+    let l298n_module_left = L298n::new(
+        &l298n_ledc,
+        &l298n_lstimer,
+        channel::Number::Channel0,
+        peripherals.GPIO12.into(),
+        channel::Number::Channel1,
+        peripherals.GPIO13.into(),
+    );
+
+    let l298n_module_rightt = L298n::new(
+        &l298n_ledc,
+        &l298n_lstimer,
+        channel::Number::Channel2,
+        peripherals.GPIO27.into(),
+        channel::Number::Channel3,
+        peripherals.GPIO14.into(),
+    );
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
