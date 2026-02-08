@@ -16,6 +16,20 @@ use l298n_driver::l298n_control::{self, L298n};
 use log::info;
 use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
 
+#[derive(Clone, Copy)]
+pub struct MotorCommand {
+    pub direction: Direction,
+}
+
+#[derive(Clone, Copy)]
+pub enum Direction {
+    Straight,
+    SlightLeft,
+    FullLeft,
+    SlightRight,
+    FullRight,
+}
+
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
     loop {}
