@@ -12,6 +12,8 @@ use embassy_time::{Duration, Timer};
 use esp_hal::clock::CpuClock;
 use esp_hal::timer::timg::TimerGroup;
 use log::info;
+use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
+use l298n_driver::l298n_control::{self, L298n};
 
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {

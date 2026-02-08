@@ -23,6 +23,10 @@ esp-println      = { version = "0.16.1", features = ["esp32", "log-04"] }
 critical-section = "1.2.0"
 static_cell      = "2.1.1"
 
+# Custom drivers
+l298n-driver = { git = "https://github.com/Low-Level-Devils/l298n-driver.git" }
+tcrt5000-driver = { git = "https://github.com/Low-Level-Devils/tcrt5000-driver.git" } 
+
 
 [profile.dev]
 # Rust debug is too slow.
