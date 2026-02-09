@@ -10,6 +10,11 @@ pub mod line_following_robot {
     use log::info;
     use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
 
+    const NORMAL_SPEED: i32 = 50;
+    const HIGH_SPEED: i32 = 75;
+    const LOW_SPEED: i32 = 25;
+    const OFF: i32 = 0;
+
     static MOTOR_COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, Direction, 2> = Channel::new();
 
     pub struct Tcrt5000ArrayInitStruct {
@@ -69,14 +74,7 @@ pub mod line_following_robot {
         loop {
             for (index, sensor) in trct5000_array.iter().enumerate() {
                 if sensor.poll_sensor() {
-                    let pos = match index {
-                        0 => Direction::FullLeft,
-                        1 => Direction::SlightLeft,
-                        2 => Direction::Straight,
-                        3 => Direction::SlightRight,
-                        4 => Direction::FullRight,
-                        _ => continue,
-                    };
+                    let pos = tcrt5000_get_direction(index);
 
                     MOTOR_COMMAND_CHANNEL.send(pos).await;
 
@@ -111,8 +109,7 @@ pub mod line_following_robot {
             init_struct.right_cathode,
         );
 
-        l298n_module_left.change_speed(50);
-        l298n_module_right.change_speed(50);
+        l298n_straight(&l298n_module_left, &l298n_module_right);
 
         info!("l298n modules initialized! Searching for path");
 
@@ -121,26 +118,59 @@ pub mod line_following_robot {
 
             match command {
                 Direction::FullLeft => {
-                    l298n_module_left.change_speed(75);
-                    l298n_module_right.change_speed(0);
+                    l298n_full_left(&l298n_module_left, &l298n_module_right);
                 }
                 Direction::SlightLeft => {
-                    l298n_module_left.change_speed(75);
-                    l298n_module_right.change_speed(25);
+                    l298n_slight_left(&l298n_module_left, &l298n_module_right);
                 }
                 Direction::Straight => {
-                    l298n_module_left.change_speed(50);
-                    l298n_module_right.change_speed(50);
+                    l298n_straight(&l298n_module_left, &l298n_module_right);
                 }
                 Direction::SlightRight => {
-                    l298n_module_left.change_speed(25);
-                    l298n_module_right.change_speed(75);
+                    l298n_slight_right(&l298n_module_left, &l298n_module_right);
                 }
                 Direction::FullRight => {
-                    l298n_module_left.change_speed(0);
-                    l298n_module_right.change_speed(75);
+                    l298n_full_right(&l298n_module_left, &l298n_module_right);
                 }
             }
         }
+    }
+
+    fn l298n_full_left(left_l298n: &L298n, right_298n: &L298n) {
+        left_l298n.change_speed(HIGH_SPEED);
+        right_298n.change_speed(OFF);
+    }
+
+    fn l298n_slight_left(left_l298n: &L298n, right_298n: &L298n) {
+        left_l298n.change_speed(HIGH_SPEED);
+        right_298n.change_speed(LOW_SPEED);
+    }
+
+    fn l298n_straight(left_l298n: &L298n, right_298n: &L298n) {
+        left_l298n.change_speed(NORMAL_SPEED);
+        right_298n.change_speed(NORMAL_SPEED);
+    }
+
+    fn l298n_slight_right(left_l298n: &L298n, right_298n: &L298n) {
+        left_l298n.change_speed(LOW_SPEED);
+        right_298n.change_speed(HIGH_SPEED);
+    }
+
+    fn l298n_full_right(left_l298n: &L298n, right_298n: &L298n) {
+        left_l298n.change_speed(OFF);
+        right_298n.change_speed(HIGH_SPEED);
+    }
+
+    fn tcrt5000_get_direction(index: usize) -> Direction {
+        match index {
+            0 => Direction::FullLeft,
+            1 => Direction::SlightLeft,
+            2 => Direction::Straight,
+            3 => Direction::SlightRight,
+            4 => Direction::FullRight,
+            _ => Direction::Straight,
+        };
+
+        Direction::Straight
     }
 }
