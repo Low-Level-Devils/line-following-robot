@@ -44,7 +44,7 @@ pub mod line_following_robot {
     }
 
     #[embassy_executor::task]
-    async fn tcrt5000_task(tcrt5000_array_init_struct: Tcrt5000ArrayInitStruct) {
+    pub async fn tcrt5000_task(tcrt5000_array_init_struct: Tcrt5000ArrayInitStruct) {
         let tcrt_left_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.left_pin);
         let tcrt_left = Tcrt5000::new(tcrt_left_pin, true);
 
@@ -68,7 +68,7 @@ pub mod line_following_robot {
     }
 
     #[embassy_executor::task]
-    async fn l298n_task(init_struct: L298nInitStruct) {
+    pub async fn l298n_task(init_struct: L298nInitStruct) {
         let l298n_ledc = l298n_control::initialize_ledc(init_struct.ledc);
         let l298n_lstimer = l298n_control::initialize_lstimer(&l298n_ledc);
 

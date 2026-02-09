@@ -58,11 +58,16 @@ async fn main(spawner: Spawner) -> ! {
     info!("Embassy initialized!");
 
     // TODO: Spawn some tasks
-    let _ = spawner;
+    let task_spawner = spawner;
+
+    task_spawner.spawn(tcrt5000_task(tcrt5000_array_init_struct)).unwrap();
+    task_spawner.spawn(l298n_task(l298n_init_struct)).unwrap();
+
+    info!("Tasks spawned...");
 
     loop {
-        //do something here I guess so main doesn't eat cpu time
+        Timer::after(Duration::from_secs(1)).await;
+        
+        info!("Main Heartbeat");
     }
-
-    // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0/examples
 }
