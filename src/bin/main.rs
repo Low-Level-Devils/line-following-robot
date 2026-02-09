@@ -17,7 +17,6 @@ use esp_hal::ledc::*;
 use esp_hal::timer::timg::TimerGroup;
 use l298n_driver::l298n_control::{self, L298n};
 use log::info;
-use static_cell::StaticCell;
 use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
 
 #[derive(Clone, Copy)]
@@ -25,12 +24,12 @@ pub struct MotorCommand {
     pub direction: Direction,
 }
 
-pub struct Tcrt5000Array<'d> {
-    pub left: Tcrt5000<'d>,
-    pub mid_left: Tcrt5000<'d>,
-    pub middle: Tcrt5000<'d>,
-    pub mid_right: Tcrt5000<'d>,
-    pub right: Tcrt5000<'d>,
+pub struct Tcrt5000ArrayInitStruct {
+    pub left_pin: AnyPin<'static>,
+    pub mid_left_pin: AnyPin<'static>,
+    pub middle_pin: AnyPin<'static>,
+    pub mid_right_pin: AnyPin<'static>,
+    pub right_pin: AnyPin<'static>,
 }
 
 pub struct L298nInitStruct {
@@ -74,6 +73,14 @@ async fn main(spawner: Spawner) -> ! {
     let config = esp_hal::Config::default().with_cpu_clock(CpuClock::max());
     let peripherals = esp_hal::init(config);
 
+    let tcrt5000_array_init_struct = Tcrt5000ArrayInitStruct {
+        left_pin: peripherals.GPIO2.into(),
+        mid_left_pin: peripherals.GPIO4.into(),
+        middle_pin: peripherals.GPIO5.into(),
+        mid_right_pin: peripherals.GPIO18.into(),
+        right_pin: peripherals.GPIO19.into(),
+    };
+
     let l298n_init_struct = L298nInitStruct {
         ledc: peripherals.LEDC,
         left_anode: peripherals.GPIO12.into(),
@@ -81,32 +88,6 @@ async fn main(spawner: Spawner) -> ! {
         right_anode: peripherals.GPIO27.into(),
         right_cathode: peripherals.GPIO14.into(),
     };
-
-    let tcrt_center_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO2);
-    let tcrt_center = Tcrt5000::new(tcrt_center_pin, true);
-
-    let tcrt_mid_left_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO4);
-    let tcrt_mid_left = Tcrt5000::new(tcrt_mid_left_pin, true);
-
-    let tcrt_left_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO5);
-    let tcrt_left = Tcrt5000::new(tcrt_left_pin, true);
-
-    let tcrt_mid_right_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO18);
-    let tcrt_mid_right = Tcrt5000::new(tcrt_mid_right_pin, true);
-
-    let tcrt_right_pin = tcrt5000::initialize_tcrt5000(peripherals.GPIO19);
-    let tcrt_right = Tcrt5000::new(tcrt_right_pin, true);
-
-    let tcrt5000_array = Tcrt5000Array {
-        left: tcrt_left,
-        mid_left: tcrt_mid_left,
-        middle: tcrt_center,
-        mid_right: tcrt_mid_right,
-        right: tcrt_right,
-    };
-
-    static TCRT5000_SENSOR_ARRAY: StaticCell<Tcrt5000Array> = StaticCell::new();
-    let tcrt5000_array_static = TCRT5000_SENSOR_ARRAY.init(tcrt5000_array);
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
@@ -124,8 +105,26 @@ async fn main(spawner: Spawner) -> ! {
 }
 
 #[embassy_executor::task]
-async fn tcrt5000_task(sensor_array: &'static mut Tcrt5000Array<'static>) {
-    //TODO Implement polling logic
+async fn tcrt5000_task(tcrt5000_array_init_struct: Tcrt5000ArrayInitStruct) {
+    let tcrt_left_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.left_pin);
+    let tcrt_left = Tcrt5000::new(tcrt_left_pin, true);
+
+    let tcrt_mid_left_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.mid_left_pin);
+    let tcrt_mid_left = Tcrt5000::new(tcrt_mid_left_pin, true);
+
+    let tcrt_center_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.middle_pin);
+    let tcrt_center = Tcrt5000::new(tcrt_center_pin, true);
+
+    let tcrt_mid_right_pin =
+        tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.mid_right_pin);
+    let tcrt_mid_right = Tcrt5000::new(tcrt_mid_right_pin, true);
+
+    let tcrt_right_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.right_pin);
+    let tcrt_right = Tcrt5000::new(tcrt_right_pin, true);
+
+    loop {
+        //TODO Implement polling logic
+    }
 }
 
 #[embassy_executor::task]
