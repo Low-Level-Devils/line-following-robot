@@ -1,12 +1,17 @@
 #![no_std]
 
 pub mod line_following_robot {
+    use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+    use embassy_sync::channel::Channel;
     use embassy_time::{Duration, Timer};
     use esp_hal::gpio::AnyPin;
     use esp_hal::ledc::*;
     use l298n_driver::l298n_control::{self, L298n};
     use log::info;
     use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
+
+    static MOTOR_COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, MotorCommand, 2> =
+        Channel::new();
 
     #[derive(Clone, Copy)]
     pub struct MotorCommand {
