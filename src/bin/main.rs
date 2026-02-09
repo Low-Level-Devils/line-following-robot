@@ -15,10 +15,26 @@ use esp_hal::timer::timg::TimerGroup;
 use l298n_driver::l298n_control::{self, L298n};
 use log::info;
 use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
+use embassy_sync::blocking_mutex::raw::CriticalSectionRawMutex;
+use embassy_sync::channel::Channel;
+use static_cell::StaticCell;
 
 #[derive(Clone, Copy)]
 pub struct MotorCommand {
     pub direction: Direction,
+}
+
+pub struct Tcrt5000Array<'d> {
+    pub left: Tcrt5000<'d>,
+    pub mid_left: Tcrt5000<'d>,
+    pub middle: Tcrt5000<'d>,
+    pub mid_right: Tcrt5000<'d>,
+    pub right: Tcrt5000<'d>,
+}
+
+pub struct L298nModules<'d, 't> {
+    pub left: L298n<'d, 't>,
+    pub right: L298n<'d, 't>,
 }
 
 #[derive(Clone, Copy)]
@@ -38,6 +54,8 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 // This creates a default app-descriptor required by the esp-idf bootloader.
 // For more information see: <https://docs.espressif.com/projects/esp-idf/en/stable/esp32/api-reference/system/app_image_format.html#application-description>
 esp_bootloader_esp_idf::esp_app_desc!();
+
+static MOTOR_COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, MotorCommand, 2> = Channel::new();
 
 #[allow(
     clippy::large_stack_frames,
@@ -79,7 +97,7 @@ async fn main(spawner: Spawner) -> ! {
         peripherals.GPIO13.into(),
     );
 
-    let l298n_module_rightt = L298n::new(
+    let l298n_module_right = L298n::new(
         &l298n_ledc,
         &l298n_lstimer,
         channel::Number::Channel2,
@@ -87,6 +105,22 @@ async fn main(spawner: Spawner) -> ! {
         channel::Number::Channel3,
         peripherals.GPIO14.into(),
     );
+
+    let tcrt5000_array = Tcrt5000Array {
+        left: tcrt_left,
+        mid_left: tcrt_mid_left,
+        middle: tcrt_center,
+        mid_right: tcrt_mid_right,
+        right: tcrt_right,
+    };
+
+    static TCRT5000_SENSOR_ARRAY: StaticCell<Tcrt5000Array> = StaticCell::new();
+    let tcrt5000_array_static = TCRT5000_SENSOR_ARRAY.init(tcrt5000_array);
+
+    let l298n_modules = L298nModules {
+        left: l298n_module_left,
+        right: l298n_module_right,
+    };
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
     esp_rtos::start(timg0.timer0);
@@ -97,9 +131,13 @@ async fn main(spawner: Spawner) -> ! {
     let _ = spawner;
 
     loop {
-        info!("Hello world!");
-        Timer::after(Duration::from_secs(1)).await;
+        //TODO Implement motor control logic
     }
 
     // for inspiration have a look at the examples at https://github.com/esp-rs/esp-hal/tree/esp-hal-v1.0.0/examples
+}
+
+#[embassy_executor::task]
+async fn tcrt5000_task(sensor_array: &'static mut Tcrt5000Array<'static>) {
+    //TODO Implement polling logic
 }
