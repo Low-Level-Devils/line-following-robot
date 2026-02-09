@@ -10,8 +10,7 @@ pub mod line_following_robot {
     use log::info;
     use tcrt5000_driver::tcrt5000::{self, Tcrt5000};
 
-    static MOTOR_COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, Direction, 2> =
-        Channel::new();
+    static MOTOR_COMMAND_CHANNEL: Channel<CriticalSectionRawMutex, Direction, 2> = Channel::new();
 
     pub struct Tcrt5000ArrayInitStruct {
         pub left_pin: AnyPin<'static>,
@@ -57,12 +56,18 @@ pub mod line_following_robot {
         let tcrt_right_pin = tcrt5000::initialize_tcrt5000(tcrt5000_array_init_struct.right_pin);
         let tcrt_right = Tcrt5000::new(tcrt_right_pin, true);
 
-        let trct5000_array = [tcrt_left, tcrt_mid_left, tcrt_center, tcrt_mid_right, tcrt_right];
+        let trct5000_array = [
+            tcrt_left,
+            tcrt_mid_left,
+            tcrt_center,
+            tcrt_mid_right,
+            tcrt_right,
+        ];
 
         info!("TCRT5000 Array initialized. Begin polling...");
 
         loop {
-            for (index, sensor) in trct5000_array.iter().enumerate()  {
+            for (index, sensor) in trct5000_array.iter().enumerate() {
                 if sensor.poll_sensor() {
                     let pos = match index {
                         0 => Direction::FullLeft,

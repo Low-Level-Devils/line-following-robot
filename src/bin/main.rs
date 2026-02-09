@@ -60,14 +60,16 @@ async fn main(spawner: Spawner) -> ! {
     // TODO: Spawn some tasks
     let task_spawner = spawner;
 
-    task_spawner.spawn(tcrt5000_task(tcrt5000_array_init_struct)).unwrap();
+    task_spawner
+        .spawn(tcrt5000_task(tcrt5000_array_init_struct))
+        .unwrap();
     task_spawner.spawn(l298n_task(l298n_init_struct)).unwrap();
 
     info!("Tasks spawned...");
 
     loop {
         Timer::after(Duration::from_secs(1)).await;
-        
+
         info!("Main Heartbeat");
     }
 }
