@@ -136,12 +136,12 @@ pub mod line_following_robot {
         }
     }
 
-    fn l298n_full_left(left_l298n: &L298n, right_298n: &L298n) {
+    fn l298n_full_right(left_l298n: &L298n, right_298n: &L298n) {
         left_l298n.change_speed(HIGH_SPEED);
         right_298n.change_speed(OFF);
     }
 
-    fn l298n_slight_left(left_l298n: &L298n, right_298n: &L298n) {
+    fn l298n_slight_right(left_l298n: &L298n, right_298n: &L298n) {
         left_l298n.change_speed(HIGH_SPEED);
         right_298n.change_speed(LOW_SPEED);
     }
@@ -151,12 +151,12 @@ pub mod line_following_robot {
         right_298n.change_speed(NORMAL_SPEED);
     }
 
-    fn l298n_slight_right(left_l298n: &L298n, right_298n: &L298n) {
+    fn l298n_slight_left(left_l298n: &L298n, right_298n: &L298n) {
         left_l298n.change_speed(LOW_SPEED);
         right_298n.change_speed(HIGH_SPEED);
     }
 
-    fn l298n_full_right(left_l298n: &L298n, right_298n: &L298n) {
+    fn l298n_full_left(left_l298n: &L298n, right_298n: &L298n) {
         left_l298n.change_speed(OFF);
         right_298n.change_speed(HIGH_SPEED);
     }
