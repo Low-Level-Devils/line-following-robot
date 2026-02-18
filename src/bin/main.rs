@@ -46,10 +46,10 @@ async fn main(spawner: Spawner) -> ! {
 
     let l298n_init_struct = L298nInitStruct {
         ledc: peripherals.LEDC,
-        left_anode: peripherals.GPIO12.into(),
-        left_cathode: peripherals.GPIO13.into(),
-        right_anode: peripherals.GPIO27.into(),
-        right_cathode: peripherals.GPIO14.into(),
+        left_anode: peripherals.GPIO14.into(),
+        left_cathode: peripherals.GPIO27.into(),
+        right_anode: peripherals.GPIO13.into(),
+        right_cathode: peripherals.GPIO12.into(),
     };
 
     let timg0 = TimerGroup::new(peripherals.TIMG0);
