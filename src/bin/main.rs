@@ -37,11 +37,11 @@ async fn main(spawner: Spawner) -> ! {
     let peripherals = esp_hal::init(config);
 
     let tcrt5000_array_init_struct = Tcrt5000ArrayInitStruct {
-        left_pin: peripherals.GPIO2.into(),
-        mid_left_pin: peripherals.GPIO4.into(),
+        left_pin: peripherals.GPIO19.into(),
+        mid_left_pin: peripherals.GPIO18.into(),
         middle_pin: peripherals.GPIO5.into(),
-        mid_right_pin: peripherals.GPIO18.into(),
-        right_pin: peripherals.GPIO19.into(),
+        mid_right_pin: peripherals.GPIO4.into(),
+        right_pin: peripherals.GPIO2.into(),
     };
 
     let l298n_init_struct = L298nInitStruct {
