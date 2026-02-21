@@ -33,7 +33,7 @@ pub mod line_following_robot {
         pub right_cathode: AnyPin<'static>,
     }
 
-    #[derive(Clone, Copy)]
+    #[derive(Clone, Copy, Debug)]
     pub enum Direction {
         FullLeft,
         SlightLeft,
@@ -72,14 +72,24 @@ pub mod line_following_robot {
         info!("TCRT5000 Array initialized. Begin polling...");
 
         loop {
+            let mut line_found = false;
+
             for (index, sensor) in trct5000_array.iter().enumerate() {
                 if sensor.poll_sensor() {
                     let pos = tcrt5000_get_direction(index);
 
+                    //info!("Line detected for index: {}", index);
+
                     MOTOR_COMMAND_CHANNEL.send(pos).await;
+
+                    line_found = true;
 
                     break;
                 }
+            }
+
+            if !line_found {
+               MOTOR_COMMAND_CHANNEL.send(Direction::Straight).await; 
             }
 
             Timer::after(Duration::from_millis(1)).await;
@@ -116,26 +126,28 @@ pub mod line_following_robot {
         loop {
             let command = MOTOR_COMMAND_CHANNEL.receive().await;
 
+            //info!("{:?}", command);
+
             match command {
                 Direction::FullLeft => {
                     l298n_full_left(&l298n_module_left, &l298n_module_right);
-                    info!("Turning full left!");
+                    //info!("Turning full left!");
                 }
                 Direction::SlightLeft => {
                     l298n_slight_left(&l298n_module_left, &l298n_module_right);
-                    info!("Turning mid left!");
+                    //info!("Turning mid left!");
                 }
                 Direction::Straight => {
                     l298n_straight(&l298n_module_left, &l298n_module_right);
-                    info!("Going straight!");
+                    //info!("Going straight!");
                 }
                 Direction::SlightRight => {
                     l298n_slight_right(&l298n_module_left, &l298n_module_right);
-                    info!("Turning slight right!");
+                    //info!("Turning slight right!");
                 }
                 Direction::FullRight => {
                     l298n_full_right(&l298n_module_left, &l298n_module_right);
-                    info!("Turning full right!");
+                    //info!("Turning full right!");
                 }
             }
         }
@@ -174,8 +186,6 @@ pub mod line_following_robot {
             3 => Direction::SlightRight,
             4 => Direction::FullRight,
             _ => Direction::Straight,
-        };
-
-        Direction::Straight
+        }
     }
 }
