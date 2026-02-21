@@ -119,18 +119,23 @@ pub mod line_following_robot {
             match command {
                 Direction::FullLeft => {
                     l298n_full_left(&l298n_module_left, &l298n_module_right);
+                    info!("Turning full left!");
                 }
                 Direction::SlightLeft => {
                     l298n_slight_left(&l298n_module_left, &l298n_module_right);
+                    info!("Turning mid left!");
                 }
                 Direction::Straight => {
                     l298n_straight(&l298n_module_left, &l298n_module_right);
+                    info!("Going straight!");
                 }
                 Direction::SlightRight => {
                     l298n_slight_right(&l298n_module_left, &l298n_module_right);
+                    info!("Turning slight right!");
                 }
                 Direction::FullRight => {
                     l298n_full_right(&l298n_module_left, &l298n_module_right);
+                    info!("Turning full right!");
                 }
             }
         }
