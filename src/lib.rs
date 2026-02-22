@@ -62,10 +62,10 @@ pub mod line_following_robot {
         let tcrt_right = Tcrt5000::new(tcrt_right_pin, true);
 
         let trct5000_array = [
-            tcrt_left,
-            tcrt_mid_left,
             tcrt_center,
+            tcrt_mid_left,
             tcrt_mid_right,
+            tcrt_left,
             tcrt_right,
         ];
 
@@ -180,10 +180,10 @@ pub mod line_following_robot {
 
     fn tcrt5000_get_direction(index: usize) -> Direction {
         match index {
-            0 => Direction::FullLeft,
+            0 => Direction::Straight,
             1 => Direction::SlightLeft,
-            2 => Direction::Straight,
-            3 => Direction::SlightRight,
+            2 => Direction::SlightRight,
+            3 => Direction::FullLeft,
             4 => Direction::FullRight,
             _ => Direction::Straight,
         }
